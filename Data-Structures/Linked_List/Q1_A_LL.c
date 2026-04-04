@@ -1,30 +1,16 @@
-//////////////////////////////////////////////////////////////////////////////////
-
-/* CE1007/CZ1007 Data Structures
-Lab Test: Section A - Linked List Questions
-Purpose: Implementing the required functions for Question 1 */
-
-//////////////////////////////////////////////////////////////////////////////////
-
 #include <stdio.h>
 #include <stdlib.h>
-
-//////////////////////////////////////////////////////////////////////////////////
 
 typedef struct _listnode{
 	int item;
 	struct _listnode *next;
-} ListNode;			// You should not change the definition of ListNode
+} ListNode;
 
 typedef struct _linkedlist{
 	int size;
 	ListNode *head;
-} LinkedList;			// You should not change the definition of LinkedList
+} LinkedList;
 
-
-///////////////////////// function prototypes ////////////////////////////////////
-
-//You should not change the prototype of this function
 int insertSortedLL(LinkedList *ll, int item);
 
 void printList(LinkedList *ll);
@@ -33,16 +19,12 @@ ListNode *findNode(LinkedList *ll, int index);
 int insertNode(LinkedList *ll, int index, int value);
 int removeNode(LinkedList *ll, int index);
 
-
-//////////////////////////// main() //////////////////////////////////////////////
-
 int main()
 {
 	LinkedList ll;
 	int c, i, j;
 	c = 1;
 
-	//Initialize the linked list 1 as an empty linked list
 	ll.head = NULL;
 	ll.size = 0;
 
@@ -80,30 +62,43 @@ int main()
 			printf("Choice unknown;\n");
 			break;
 		}
-
-
 	}
 	return 0;
 }
 
-//////////////////////////////////////////////////////////////////////////////////
-
 int insertSortedLL(LinkedList *ll, int item)
 {
-	/* add your code here */
-}
+	int index = 0;
+	ListNode *cur;
 
-///////////////////////////////////////////////////////////////////////////////////
+	if (ll == NULL)
+		return -1;
+
+	cur = ll->head;
+
+	while (cur != NULL && cur->item < item){
+		cur = cur->next;
+		index++;
+	}
+
+	if (insertNode(ll, index, item) == -1)
+		return -1;
+
+	return index;
+}
 
 void printList(LinkedList *ll){
 
 	ListNode *cur;
+
 	if (ll == NULL)
 		return;
+
 	cur = ll->head;
 
 	if (cur == NULL)
 		printf("Empty");
+
 	while (cur != NULL)
 	{
 		printf("%d ", cur->item);
@@ -157,7 +152,6 @@ int insertNode(LinkedList *ll, int index, int value){
 	if (ll == NULL || index < 0 || index > ll->size + 1)
 		return -1;
 
-	// If empty list or inserting first node, need to update head pointer
 	if (ll->head == NULL || index == 0){
 		cur = ll->head;
 		ll->head = malloc(sizeof(ListNode));
@@ -167,9 +161,6 @@ int insertNode(LinkedList *ll, int index, int value){
 		return 0;
 	}
 
-
-	// Find the nodes before and at the target position
-	// Create a new node and reconnect the links
 	if ((pre = findNode(ll, index - 1)) != NULL){
 		cur = pre->next;
 		pre->next = malloc(sizeof(ListNode));
@@ -187,11 +178,9 @@ int removeNode(LinkedList *ll, int index){
 
 	ListNode *pre, *cur;
 
-	// Highest index we can remove is size-1
 	if (ll == NULL || index < 0 || index >= ll->size)
 		return -1;
 
-	// If removing first node, need to update head pointer
 	if (index == 0){
 		cur = ll->head->next;
 		free(ll->head);
@@ -201,8 +190,6 @@ int removeNode(LinkedList *ll, int index){
 		return 0;
 	}
 
-	// Find the nodes before and after the target position
-	// Free the target node and reconnect the links
 	if ((pre = findNode(ll, index - 1)) != NULL){
 
 		if (pre->next == NULL)
