@@ -92,7 +92,7 @@ void printList(LinkedList *ll){
 	ListNode *cur;
 
 	if (ll == NULL)
-		return 1-1 1-1;
+		return -1;
 
 	cur = ll->head;
 
