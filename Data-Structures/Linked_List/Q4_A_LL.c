@@ -86,7 +86,41 @@ int main()
 
 void moveEvenItemsToBack(LinkedList *ll)
 {
-	/* add your code here */
+	ListNode *tail, *pre, *cur;
+
+	// 빈 리스트거나 노드가 1개면 할 게 없음
+	if (ll->head == NULL || ll->size <= 1)
+		return;
+
+	// 1. 원래 마지막 노드(tail) 찾기
+	tail = ll->head;
+	while (tail->next != NULL)
+		tail = tail->next;
+
+	// 2. 순회 시작
+	pre = NULL;
+	cur = ll->head;
+
+	while (cur != tail && cur != NULL) {
+		if (cur->item % 2 == 0) {
+			// 홀수: 현재 위치에서 떼어내고 맨 뒤에 붙이기
+			ListNode *next = cur->next; // 다음 노드 미리 저장!
+
+			if (pre == NULL)
+				ll->head = next;    // head가 홀수일 때
+			else
+				pre->next = next;   // 일반적인 경우
+
+			tail->next = cur;   // 맨 뒤에 붙이기
+			cur->next = NULL;   // 새 마지막 노드
+			tail = cur;         // tail 업데이트
+			cur = next;         // 다음 노드로 이동
+		} else {
+			// 짝수: 그냥 앞으로 이동
+			pre = cur;
+			cur = cur->next;
+		}
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
@@ -165,51 +199,4 @@ int insertNode(LinkedList *ll, int index, int value){
 
 
 	// Find the nodes before and at the target position
-	// Create a new node and reconnect the links
-	if ((pre = findNode(ll, index - 1)) != NULL){
-		cur = pre->next;
-		pre->next = malloc(sizeof(ListNode));
-		pre->next->item = value;
-		pre->next->next = cur;
-		ll->size++;
-		return 0;
-	}
-
-	return -1;
-}
-
-
-int removeNode(LinkedList *ll, int index){
-
-	ListNode *pre, *cur;
-
-	// Highest index we can remove is size-1
-	if (ll == NULL || index < 0 || index >= ll->size)
-		return -1;
-
-	// If removing first node, need to update head pointer
-	if (index == 0){
-		cur = ll->head->next;
-		free(ll->head);
-		ll->head = cur;
-		ll->size--;
-
-		return 0;
-	}
-
-	// Find the nodes before and after the target position
-	// Free the target node and reconnect the links
-	if ((pre = findNode(ll, index - 1)) != NULL){
-
-		if (pre->next == NULL)
-			return -1;
-
-		cur = pre->next;
-		pre->next = cur->next;
-		free(cur);
-		ll->size--;
-		return 0;
-	}
-
-	return -1;
-}
+	// Create a new nod

@@ -11,23 +11,27 @@ Purpose: Implementing the required functions for Question 3 */
 
 //////////////////////////////////////////////////////////////////////////////////
 
+// 노드 하나를 표현하는 구조체
+// 파이썬의 클래스 인스턴스 하나와 비슷하게 생각하면 돼
 typedef struct _listnode
 {
-	int item;
-	struct _listnode *next;
+	int item;               // 노드가 저장하는 정수 값
+	struct _listnode *next; // 다음 노드를 가리키는 포인터 (마지막 노드면 NULL)
 } ListNode;			// You should not change the definition of ListNode
 
+// 링크드 리스트 전체를 관리하는 구조체
+// head 포인터와 전체 크기(size)를 들고 다님
 typedef struct _linkedlist
 {
-	int size;
-	ListNode *head;
+	int size;       // 현재 리스트에 들어있는 노드 수
+	ListNode *head; // 첫 번째 노드를 가리키는 포인터 (빈 리스트면 NULL)
 } LinkedList;			// You should not change the definition of LinkedList
 
 
 //////////////////////// function prototypes /////////////////////////////////////
 
 // You should not change the prototype of this function
-void moveOddItemsToBack(LinkedList *ll);
+void moveOddItemsToBack(LinkedList *ll); // ← 네가 구현할 함수!
 
 void printList(LinkedList *ll);
 void removeAllItems(LinkedList *ll);
@@ -42,10 +46,10 @@ int main()
 	LinkedList ll;
 	int c, i, j;
 	c = 1;
-	//Initialize the linked list 1 as an empty linked list
+
+	// 링크드 리스트를 빈 상태로 초기화
 	ll.head = NULL;
 	ll.size = 0;
-
 
 	printf("1: Insert an integer to the linked list:\n");
 	printf("2: Move all odd integers to the back of the linked list:\n");
@@ -59,6 +63,7 @@ int main()
 		switch (c)
 		{
 		case 1:
+			// 정수 하나를 입력받아 리스트 맨 뒤(ll.size 위치)에 삽입
 			printf("Input an integer that you want to add to the linked list: ");
 			scanf("%d", &i);
 			j = insertNode(&ll, ll.size, i);
@@ -66,13 +71,14 @@ int main()
 			printList(&ll);
 			break;
 		case 2:
-			moveOddItemsToBack(&ll); // You need to code this function
+			// 홀수 노드를 뒤로 보내는 함수 호출 (네가 구현!)
+			moveOddItemsToBack(&ll);
 			printf("The resulting linked list after moving odd integers to the back of the linked list is: ");
 			printList(&ll);
-			removeAllItems(&ll);
+			removeAllItems(&ll); // 출력 후 리스트 전체 메모리 해제
 			break;
 		case 0:
-			removeAllItems(&ll);
+			removeAllItems(&ll); // 종료 전 메모리 해제
 			break;
 		default:
 			printf("Choice unknown;\n");
@@ -86,56 +92,97 @@ int main()
 
 void moveOddItemsToBack(LinkedList *ll)
 {
-	/* add your code here */
+	ListNode *tail, *pre, *cur;
+
+	// 빈 리스트거나 노드가 1개면 할 게 없음
+	if (ll->head == NULL || ll->size <= 1)
+		return;
+
+	// 1. 원래 마지막 노드(tail) 찾기
+	tail = ll->head;
+	while (tail->next != NULL)
+		tail = tail->next;
+
+	// 2. 순회 시작
+	pre = NULL;
+	cur = ll->head;
+
+	while (cur != tail && cur != NULL) {
+		if (cur->item % 2 != 0) {
+			// 홀수: 현재 위치에서 떼어내고 맨 뒤에 붙이기
+			ListNode *next = cur->next; // 다음 노드 미리 저장!
+
+			if (pre == NULL)
+				ll->head = next;    // head가 홀수일 때
+			else
+				pre->next = next;   // 일반적인 경우
+
+			tail->next = cur;   // 맨 뒤에 붙이기
+			cur->next = NULL;   // 새 마지막 노드
+			tail = cur;         // tail 업데이트
+			cur = next;         // 다음 노드로 이동
+		} else {
+			// 짝수: 그냥 앞으로 이동
+			pre = cur;
+			cur = cur->next;
+		}
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////////
 
+// 리스트의 모든 노드를 순서대로 출력하는 함수
 void printList(LinkedList *ll){
 
 	ListNode *cur;
 	if (ll == NULL)
 		return;
-	cur = ll->head;
+	cur = ll->head; // 첫 번째 노드부터 시작
 
 	if (cur == NULL)
-		printf("Empty");
+		printf("Empty"); // 빈 리스트면 "Empty" 출력
 	while (cur != NULL)
 	{
-		printf("%d ", cur->item);
-		cur = cur->next;
+		printf("%d ", cur->item); // 현재 노드의 값 출력
+		cur = cur->next;          // 다음 노드로 이동
 	}
 	printf("\n");
 }
 
 
+// 리스트의 모든 노드를 메모리에서 해제하고 초기화하는 함수
+// free()를 안 하면 메모리 누수(memory leak) 발생! (파이썬은 GC가 자동으로 해줬지만 C는 직접 해야 해)
 void removeAllItems(LinkedList *ll)
 {
 	ListNode *cur = ll->head;
 	ListNode *tmp;
 
 	while (cur != NULL){
-		tmp = cur->next;
-		free(cur);
-		cur = tmp;
+		tmp = cur->next; // 다음 노드 주소를 미리 저장 (free 하면 cur->next 접근 불가)
+		free(cur);       // 현재 노드 메모리 해제
+		cur = tmp;       // 저장해둔 다음 노드로 이동
 	}
-	ll->head = NULL;
-	ll->size = 0;
+	ll->head = NULL; // head를 NULL로 초기화
+	ll->size = 0;    // size를 0으로 초기화
 }
 
 
+// index 번째 노드의 포인터를 반환하는 함수
+// 없으면 NULL 반환
 ListNode *findNode(LinkedList *ll, int index){
 
 	ListNode *temp;
 
+	// 유효하지 않은 입력 체크
 	if (ll == NULL || index < 0 || index >= ll->size)
 		return NULL;
 
-	temp = ll->head;
+	temp = ll->head; // 첫 번째 노드부터 시작
 
 	if (temp == NULL || index < 0)
 		return NULL;
 
+	// index번만큼 next를 따라가면 원하는 노드에 도달
 	while (index > 0){
 		temp = temp->next;
 		if (temp == NULL)
@@ -143,34 +190,35 @@ ListNode *findNode(LinkedList *ll, int index){
 		index--;
 	}
 
-	return temp;
+	return temp; // 찾은 노드 반환
 }
 
+// index 위치에 value를 가진 새 노드를 삽입하는 함수
+// 성공하면 0, 실패하면 -1 반환
 int insertNode(LinkedList *ll, int index, int value){
 
 	ListNode *pre, *cur;
 
+	// 유효하지 않은 입력 체크
 	if (ll == NULL || index < 0 || index > ll->size + 1)
 		return -1;
 
-	// If empty list or inserting first node, need to update head pointer
+	// 빈 리스트이거나 맨 앞(index==0)에 삽입할 때 → head를 새 노드로 교체
 	if (ll->head == NULL || index == 0){
 		cur = ll->head;
-		ll->head = malloc(sizeof(ListNode));
-		ll->head->item = value;
-		ll->head->next = cur;
+		ll->head = malloc(sizeof(ListNode)); // 새 노드 메모리 할당
+		ll->head->item = value;              // 값 설정
+		ll->head->next = cur;                // 기존 head를 새 노드 뒤에 연결
 		ll->size++;
 		return 0;
 	}
 
-
-	// Find the nodes before and at the target position
-	// Create a new node and reconnect the links
+	// index-1 번째 노드(pre)를 찾고, 그 뒤에 새 노드를 끼워넣기
 	if ((pre = findNode(ll, index - 1)) != NULL){
 		cur = pre->next;
-		pre->next = malloc(sizeof(ListNode));
-		pre->next->item = value;
-		pre->next->next = cur;
+		pre->next = malloc(sizeof(ListNode)); // 새 노드 메모리 할당
+		pre->next->item = value;              // 값 설정
+		pre->next->next = cur;                // 새 노드 뒤에 기존 노드 연결
 		ll->size++;
 		return 0;
 	}
@@ -179,34 +227,34 @@ int insertNode(LinkedList *ll, int index, int value){
 }
 
 
+// index 위치의 노드를 리스트에서 제거하고 메모리 해제하는 함수
+// 성공하면 0, 실패하면 -1 반환
 int removeNode(LinkedList *ll, int index){
 
 	ListNode *pre, *cur;
 
-	// Highest index we can remove is size-1
+	// 유효하지 않은 입력 체크
 	if (ll == NULL || index < 0 || index >= ll->size)
 		return -1;
 
-	// If removing first node, need to update head pointer
+	// 맨 앞 노드(index==0) 제거 → head를 다음 노드로 교체
 	if (index == 0){
-		cur = ll->head->next;
-		free(ll->head);
-		ll->head = cur;
+		cur = ll->head->next; // 두 번째 노드를 미리 저장
+		free(ll->head);       // 첫 번째 노드 메모리 해제
+		ll->head = cur;       // head를 두 번째 노드로 교체
 		ll->size--;
-
 		return 0;
 	}
 
-	// Find the nodes before and after the target position
-	// Free the target node and reconnect the links
+	// index-1 번째 노드(pre)를 찾아서, pre->next(삭제 대상)를 건너뛰고 연결
 	if ((pre = findNode(ll, index - 1)) != NULL){
 
 		if (pre->next == NULL)
 			return -1;
 
-		cur = pre->next;
-		pre->next = cur->next;
-		free(cur);
+		cur = pre->next;         // 삭제할 노드
+		pre->next = cur->next;   // 삭제할 노드를 건너뛰고 연결
+		free(cur);               // 삭제할 노드 메모리 해제
 		ll->size--;
 		return 0;
 	}
