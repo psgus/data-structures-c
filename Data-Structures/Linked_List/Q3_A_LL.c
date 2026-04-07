@@ -92,43 +92,52 @@ int main()
 
 void moveOddItemsToBack(LinkedList *ll)
 {
-	ListNode *tail, *pre, *cur;
+	ListNode *tail, *newTail, *pre, *cur;
 
-	// 빈 리스트거나 노드가 1개면 할 게 없음
+	// 빈 리스트거나 노드가 1개면 아무것도 할 필요 없음
 	if (ll->head == NULL || ll->size <= 1)
 		return;
 
-	// 1. 원래 마지막 노드(tail) 찾기
+	// 1단계: 원래 마지막 노드(tail)를 찾아서 경계선으로 설정
+	// tail은 "여기까지만 처리하자"는 sentinel 역할 → 절대 바꾸면 안 됨!
+	// 파이썬으로 치면: tail = linked_list[-1]
 	tail = ll->head;
 	while (tail->next != NULL)
 		tail = tail->next;
 
-	// 2. 순회 시작
-	pre = NULL;
+	// newTail: 홀수 노드를 붙일 위치 (처음엔 원래 마지막 노드 = tail과 동일)
+	// tail과 별개로 관리해야 sentinel이 안 망가짐!
+	newTail = tail;
+
+	// 2단계: head부터 순회 시작
+	pre = NULL; // cur의 이전 노드 (처음엔 없으니까 NULL)
 	cur = ll->head;
 
+	// cur이 원래 tail에 도달하면 멈춤 (tail 이후는 이미 뒤로 보낸 노드들)
 	while (cur != tail && cur != NULL) {
 		if (cur->item % 2 != 0) {
-			// 홀수: 현재 위치에서 떼어내고 맨 뒤에 붙이기
-			ListNode *next = cur->next; // 다음 노드 미리 저장!
+			// 홀수 노드: 현재 위치에서 떼어내고 맨 뒤(newTail)에 붙이기
+			ListNode *next = cur->next; // 다음 노드를 미리 저장 (연결 끊기 전에!)
 
+			// cur을 현재 위치에서 떼어내기
 			if (pre == NULL)
-				ll->head = next;    // head가 홀수일 때
+				ll->head = next;  // cur이 head였을 때: head를 다음 노드로 교체
 			else
-				pre->next = next;   // 일반적인 경우
+				pre->next = next; // 일반적인 경우: 이전 노드가 다음 노드를 가리키게
 
-			tail->next = cur;   // 맨 뒤에 붙이기
-			cur->next = NULL;   // 새 마지막 노드
-			tail = cur;         // tail 업데이트
-			cur = next;         // 다음 노드로 이동
+			// cur을 newTail 뒤에 붙이기
+			newTail->next = cur; // 현재 맨 뒤(newTail)에 cur 연결
+			cur->next = NULL;    // cur이 새 마지막 노드가 됨
+			newTail = cur;       // newTail을 cur로 업데이트 (다음 홀수는 여기 뒤에)
+
+			cur = next;          // 다음 노드로 이동 (pre는 그대로, 위치가 안 바뀌었으니)
 		} else {
-			// 짝수: 그냥 앞으로 이동
+			// 짝수 노드: 건드리지 않고 앞으로 이동
 			pre = cur;
 			cur = cur->next;
 		}
 	}
 }
-
 ///////////////////////////////////////////////////////////////////////////////////
 
 // 리스트의 모든 노드를 순서대로 출력하는 함수
@@ -261,3 +270,4 @@ int removeNode(LinkedList *ll, int index){
 
 	return -1;
 }
+                                                                                                                                      
